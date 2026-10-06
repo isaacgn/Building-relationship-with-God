@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 
 import { growthAreas } from "@/data/growthAreas";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   getTodayKey,
   isCompletedToday,
@@ -11,11 +12,17 @@ import {
 
 export default function GrowthDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useLanguage();
+  const navigation = useNavigation();
 
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const area = growthAreas.find((item) => item.id === id);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({ title: t("Growth Area") });
+  }, [navigation, t]);
 
   useEffect(() => {
     async function loadCompletionStatus() {
@@ -56,22 +63,22 @@ export default function GrowthDetailScreen() {
   if (!area) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Growth area not found</Text>
+        <Text style={styles.title}>{t("Growth area not found")}</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.category}>{area.category.toUpperCase()}</Text>
+      <Text style={styles.category}>{t(area.category).toUpperCase()}</Text>
 
-      <Text style={styles.title}>{area.title}</Text>
+      <Text style={styles.title}>{t(area.title)}</Text>
 
-      <Text style={styles.description}>{area.description}</Text>
+      <Text style={styles.description}>{t(area.description)}</Text>
 
       <View style={styles.promptBox}>
-        <Text style={styles.promptTitle}>Today’s reflection</Text>
-        <Text style={styles.prompt}>{area.prompt}</Text>
+        <Text style={styles.promptTitle}>{t("Today’s reflection")}</Text>
+        <Text style={styles.prompt}>{t(area.prompt)}</Text>
       </View>
 
       <Pressable
@@ -81,10 +88,10 @@ export default function GrowthDetailScreen() {
       >
         <Text style={styles.buttonText}>
           {isLoading
-            ? "Loading..."
+            ? t("Loading...")
             : completed
-              ? "Completed today — tap to undo"
-              : "Complete for today"}
+              ? t("Completed today — tap to undo")
+              : t("Complete for today")}
         </Text>
       </Pressable>
     </View>

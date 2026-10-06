@@ -3,11 +3,13 @@ import { ScrollView, StyleSheet, Text } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import GrowthCard from "@/components/GrowthCard";
+import { useLanguage } from "@/context/LanguageContext";
 import { growthAreas } from "@/data/growthAreas";
 import { CompletionMap, getCompletions, getTodayKey } from "@/services/storage";
 
 export default function GrowthScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [completions, setCompletions] = useState<CompletionMap>({});
 
@@ -26,16 +28,20 @@ export default function GrowthScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Growth Areas</Text>
+      <Text style={styles.title}>{t("Growth Areas")}</Text>
 
       <Text style={styles.subtitle}>
-        Choose an area for reflection, prayer, and daily practice.
+        {t("Choose an area for reflection, prayer, and daily practice.")}
       </Text>
 
       {growthAreas.map((area) => (
         <GrowthCard
           key={area.id}
-          area={area}
+          area={{
+            ...area,
+            title: t(area.title),
+            description: t(area.description),
+          }}
           completed={completedToday.includes(area.id)}
           onPress={() => router.push(`/growth-detail/${area.id}`)}
         />

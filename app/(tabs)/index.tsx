@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { growthAreas } from "@/data/growthAreas";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   CompletionMap,
   getCompletions,
@@ -20,6 +21,7 @@ import {
 
 export default function TodayScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [completions, setCompletions] = useState<CompletionMap>({});
@@ -59,13 +61,13 @@ export default function TodayScreen() {
   );
 
   const completedToday = completions[getTodayKey()] ?? [];
-  const firstName = profile?.name.trim().split(/\s+/)[0] || "there";
+  const firstName = profile?.name.trim().split(/\s+/)[0] || t("there");
 
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#2F6B45" />
-        <Text style={styles.loadingText}>Loading your dashboard...</Text>
+        <Text style={styles.loadingText}>{t("Loading your dashboard...")}</Text>
       </View>
     );
   }
@@ -73,17 +75,17 @@ export default function TodayScreen() {
   if (!profile?.onboardingComplete) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.title}>Building Relationship with God</Text>
+        <Text style={styles.title}>{t("Building Relationship with God")}</Text>
 
         <Text style={styles.emptyText}>
-          Complete your profile setup to personalise your daily journey.
+          {t("Complete your profile setup to personalise your daily journey.")}
         </Text>
 
         <Pressable
           style={styles.primaryButton}
           onPress={() => router.push("/onboarding")}
         >
-          <Text style={styles.primaryButtonText}>Set Up My Profile</Text>
+          <Text style={styles.primaryButtonText}>{t("Set Up My Profile")}</Text>
         </Pressable>
       </View>
     );
@@ -92,9 +94,9 @@ export default function TodayScreen() {
   if (!dailyFocus) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.title}>Building Relationship with God</Text>
+        <Text style={styles.title}>{t("Building Relationship with God")}</Text>
         <Text style={styles.emptyText}>
-          Add Growth Areas to your data file to show a Daily Focus.
+          {t("Add Growth Areas to your data file to show a Daily Focus.")}
         </Text>
       </View>
     );
@@ -104,28 +106,29 @@ export default function TodayScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.welcome}>Welcome, {firstName}</Text>
+      <Text style={styles.welcome}>{t("Welcome, {name}", { name: firstName })}</Text>
 
-      <Text style={styles.title}>Building Relationship with God</Text>
+      <Text style={styles.title}>{t("Building Relationship with God")}</Text>
 
       <Text style={styles.introduction}>
-        Grow daily through prayer, Scripture, gratitude, reflection, and
-        faithful action.
+        {t(
+          "Grow daily through prayer, Scripture, gratitude, reflection, and faithful action."
+        )}
       </Text>
 
-      <View style={styles.dailyFocusCard}>
-        <Text style={styles.dailyFocusLabel}>DAILY FOCUS</Text>
+      {/* <View style={styles.dailyFocusCard}>
+        <Text style={styles.dailyFocusLabel}>{t("DAILY FOCUS")}</Text>
 
-        <Text style={styles.dailyFocusTitle}>{dailyFocus.title}</Text>
+        <Text style={styles.dailyFocusTitle}>{t(dailyFocus.title)}</Text>
 
         <Text style={styles.dailyFocusDescription}>
-          {dailyFocus.description}
+          {t(dailyFocus.description)}
         </Text>
 
         <View style={styles.promptBox}>
-          <Text style={styles.promptLabel}>TODAY&apos;S REFLECTION</Text>
+          <Text style={styles.promptLabel}>{t("TODAY'S REFLECTION")}</Text>
 
-          <Text style={styles.promptText}>{dailyFocus.prompt}</Text>
+          <Text style={styles.promptText}>{t(dailyFocus.prompt)}</Text>
         </View>
 
         <Pressable
@@ -137,31 +140,35 @@ export default function TodayScreen() {
         >
           <Text style={styles.focusButtonText}>
             {isDailyFocusCompleted
-              ? "Completed today"
-              : "Open Daily Focus"}
+              ? t("Completed today")
+              : t("Open Daily Focus")}
           </Text>
         </Pressable>
-      </View>
+      </View> */}
 
       <View style={styles.progressCard}>
         <View style={styles.progressHeader}>
-          <Text style={styles.progressTitle}>Today&apos;s Progress</Text>
+          <Text style={styles.progressTitle}>{t("Today's Progress")}</Text>
 
           <Text style={styles.progressNumber}>
-            {completedToday.length} completed
+            {t("{count} completed", { count: completedToday.length })}
           </Text>
         </View>
 
         <Text style={styles.progressText}>
-          You have completed {completedToday.length}{" "}
-          {completedToday.length === 1 ? "practice" : "practices"} today.
+          {t(
+            completedToday.length === 1
+              ? "You have completed {count} practice today."
+              : "You have completed {count} practices today.",
+            { count: completedToday.length }
+          )}
         </Text>
 
         <Pressable
           style={styles.secondaryButton}
           onPress={() => router.push("/growth")}
         >
-          <Text style={styles.secondaryButtonText}>View Growth Areas</Text>
+          <Text style={styles.secondaryButtonText}>{t("View Growth Areas")}</Text>
         </Pressable>
       </View>
     </ScrollView>

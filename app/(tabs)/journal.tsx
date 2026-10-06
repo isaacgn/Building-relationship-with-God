@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLanguage } from "@/context/LanguageContext";
 
 type JournalEntry = {
   id: string;
@@ -35,7 +36,15 @@ function getLocalDateKey() {
   return `${year}-${month}-${day}`;
 }
 
+function formatDateKey(dateKey: string, language: "en" | "ta") {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString(
+    language === "ta" ? "ta-IN" : "en-GB"
+  );
+}
+
 export default function JournalScreen() {
+  const { language, t } = useLanguage();
   const [gratitude, setGratitude] = useState("");
   const [prayer, setPrayer] = useState("");
   const [verse, setVerse] = useState("");
@@ -58,11 +67,11 @@ export default function JournalScreen() {
     } catch (error) {
       console.error("Could not load journal entries:", error);
       Alert.alert(
-        "Could not load journal",
-        "Your saved journal entries could not be loaded."
+        t("Could not load journal"),
+        t("Your saved journal entries could not be loaded.")
       );
     }
-  }, []);
+  }, [t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -88,8 +97,8 @@ export default function JournalScreen() {
 
     if (!hasContent) {
       Alert.alert(
-        "Add a journal entry",
-        "Write something in at least one field before saving."
+        t("Add a journal entry"),
+        t("Write something in at least one field before saving.")
       );
       return;
     }
@@ -117,13 +126,13 @@ export default function JournalScreen() {
       setEntries(updatedEntries);
       clearForm();
 
-      Alert.alert("Saved", "Your journal entry has been saved.");
+      Alert.alert(t("Saved"), t("Your journal entry has been saved."));
     } catch (error) {
       console.error("Could not save journal entry:", error);
 
       Alert.alert(
-        "Could not save entry",
-        "Please try again. Your entry has not been saved yet."
+        t("Could not save entry"),
+        t("Please try again. Your entry has not been saved yet.")
       );
     } finally {
       setIsSaving(false);
@@ -139,64 +148,70 @@ export default function JournalScreen() {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Journal</Text>
+        <Text style={styles.title}>{t("Journal")}</Text>
 
         <Text style={styles.subtitle}>
-          Record gratitude, prayer, Scripture, and reflections from your day.
+          {t("Record gratitude, prayer, Scripture, and reflections from your day.")}
         </Text>
 
         <View style={styles.dateBadge}>
-          <Text style={styles.dateBadgeText}>{getLocalDateKey()}</Text>
+          <Text style={styles.dateBadgeText}>
+            {new Date(
+              new Date().getFullYear(),
+              new Date().getMonth(),
+              new Date().getDate()
+            ).toLocaleDateString(language === "ta" ? "ta-IN" : "en-GB")}
+          </Text>
         </View>
 
-        <Text style={styles.label}>Gratitude</Text>
+        <Text style={styles.label}>{t("Gratitude")}</Text>
         <TextInput
           value={gratitude}
           onChangeText={setGratitude}
-          placeholder="What are you thankful for today?"
+          placeholder={t("What are you thankful for today?")}
           placeholderTextColor="#7A877B"
           multiline
           textAlignVertical="top"
           style={styles.textArea}
         />
 
-        <Text style={styles.label}>Prayer</Text>
+        <Text style={styles.label}>{t("Prayer")}</Text>
         <TextInput
           value={prayer}
           onChangeText={setPrayer}
-          placeholder="What would you like to pray about?"
+          placeholder={t("What would you like to pray about?")}
           placeholderTextColor="#7A877B"
           multiline
           textAlignVertical="top"
           style={styles.textArea}
         />
 
-        <Text style={styles.label}>Scripture or verse</Text>
+        <Text style={styles.label}>{t("Scripture or verse")}</Text>
         <TextInput
           value={verse}
           onChangeText={setVerse}
-          placeholder="Example: Psalm 23:1"
+          placeholder={t("Example: Psalm 23:1")}
           placeholderTextColor="#7A877B"
           style={styles.input}
           autoCapitalize="sentences"
         />
 
-        <Text style={styles.label}>Reflection</Text>
+        <Text style={styles.label}>{t("Reflection")}</Text>
         <TextInput
           value={reflection}
           onChangeText={setReflection}
-          placeholder="What did you learn, notice, or want to remember?"
+          placeholder={t("What did you learn, notice, or want to remember?")}
           placeholderTextColor="#7A877B"
           multiline
           textAlignVertical="top"
           style={styles.textArea}
         />
 
-        <Text style={styles.label}>Answered prayer (optional)</Text>
+        <Text style={styles.label}>{t("Answered prayer (optional)")}</Text>
         <TextInput
           value={answeredPrayer}
           onChangeText={setAnsweredPrayer}
-          placeholder="Record an answered prayer or encouragement."
+          placeholder={t("Record an answered prayer or encouragement.")}
           placeholderTextColor="#7A877B"
           multiline
           textAlignVertical="top"
@@ -209,59 +224,63 @@ export default function JournalScreen() {
           disabled={isSaving}
         >
           <Text style={styles.saveButtonText}>
-            {isSaving ? "Saving..." : "Save Journal Entry"}
+            {isSaving ? t("Saving...") : t("Save Journal Entry")}
           </Text>
         </Pressable>
 
         <View style={styles.historyHeader}>
-          <Text style={styles.historyTitle}>Recent Entries</Text>
+          <Text style={styles.historyTitle}>{t("Recent Entries")}</Text>
           <Text style={styles.entryCount}>
-            {entries.length} {entries.length === 1 ? "entry" : "entries"}
+            {t(entries.length === 1 ? "{count} entry" : "{count} entries", {
+              count: entries.length,
+            })}
           </Text>
         </View>
 
         {entries.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>
-              No journal entries yet. Your saved entries will appear here.
+              {t("No journal entries yet. Your saved entries will appear here.")}
             </Text>
           </View>
         ) : (
           entries.map((entry) => (
             <View key={entry.id} style={styles.entryCard}>
-              <Text style={styles.entryDate}>{entry.date}</Text>
+              <Text style={styles.entryDate}>
+                {formatDateKey(entry.date, language)}
+              </Text>
 
               {entry.gratitude ? (
                 <View style={styles.entrySection}>
-                  <Text style={styles.entryLabel}>Gratitude</Text>
+                  <Text style={styles.entryLabel}>{t("Gratitude")}</Text>
                   <Text style={styles.entryText}>{entry.gratitude}</Text>
                 </View>
               ) : null}
 
               {entry.prayer ? (
                 <View style={styles.entrySection}>
-                  <Text style={styles.entryLabel}>Prayer</Text>
+                  <Text style={styles.entryLabel}>{t("Prayer")}</Text>
                   <Text style={styles.entryText}>{entry.prayer}</Text>
                 </View>
               ) : null}
 
               {entry.verse ? (
                 <View style={styles.entrySection}>
-                  <Text style={styles.entryLabel}>Scripture</Text>
+                  <Text style={styles.entryLabel}>{t("Scripture")}</Text>
                   <Text style={styles.entryText}>{entry.verse}</Text>
                 </View>
               ) : null}
 
               {entry.reflection ? (
                 <View style={styles.entrySection}>
-                  <Text style={styles.entryLabel}>Reflection</Text>
+                  <Text style={styles.entryLabel}>{t("Reflection")}</Text>
                   <Text style={styles.entryText}>{entry.reflection}</Text>
                 </View>
               ) : null}
 
               {entry.answeredPrayer ? (
                 <View style={styles.entrySection}>
-                  <Text style={styles.entryLabel}>Answered Prayer</Text>
+                  <Text style={styles.entryLabel}>{t("Answered Prayer")}</Text>
                   <Text style={styles.entryText}>
                     {entry.answeredPrayer}
                   </Text>

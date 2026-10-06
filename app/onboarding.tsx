@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useLanguage } from "@/context/LanguageContext";
 
 import {
   LifeStage,
@@ -26,6 +27,7 @@ const lifeStageOptions: { label: string; value: LifeStage }[] = [
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [name, setName] = useState("");
   const [lifeStage, setLifeStage] = useState<LifeStage>("general");
@@ -37,7 +39,7 @@ export default function OnboardingScreen() {
     const trimmedName = name.trim();
 
     if (!trimmedName) {
-      Alert.alert("Name required", "Please enter your name to continue.");
+      Alert.alert(t("Name required"), t("Please enter your name to continue."));
       return;
     }
 
@@ -58,8 +60,8 @@ export default function OnboardingScreen() {
       router.replace("/");
     } catch (error) {
       Alert.alert(
-        "Could not save profile",
-        "Please try again. If the problem continues, restart the app."
+        t("Could not save profile"),
+        t("Please try again. If the problem continues, restart the app.")
       );
     } finally {
       setIsSaving(false);
@@ -68,23 +70,23 @@ export default function OnboardingScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Welcome</Text>
+      <Text style={styles.title}>{t("Welcome")}</Text>
 
       <Text style={styles.subtitle}>
-        Set up your personal spiritual-growth journey.
+        {t("Set up your personal spiritual-growth journey.")}
       </Text>
 
-      <Text style={styles.label}>Your name</Text>
+      <Text style={styles.label}>{t("Your name")}</Text>
 
       <TextInput
         value={name}
         onChangeText={setName}
-        placeholder="Enter your name"
+        placeholder={t("Enter your name")}
         style={styles.input}
         autoCapitalize="words"
       />
 
-      <Text style={styles.label}>I am primarily a</Text>
+      <Text style={styles.label}>{t("I am primarily a")}</Text>
 
       <View style={styles.options}>
         {lifeStageOptions.map((option) => {
@@ -102,14 +104,14 @@ export default function OnboardingScreen() {
                   selected && styles.selectedOptionText,
                 ]}
               >
-                {option.label}
+                {t(option.label)}
               </Text>
             </Pressable>
           );
         })}
       </View>
 
-      <Text style={styles.label}>Daily reminder time</Text>
+      <Text style={styles.label}>{t("Daily reminder time")}</Text>
 
       <TextInput
         value={dailyReminderTime}
@@ -121,9 +123,9 @@ export default function OnboardingScreen() {
 
       <View style={styles.switchRow}>
         <View style={styles.switchText}>
-          <Text style={styles.label}>Enable reminders</Text>
+          <Text style={styles.label}>{t("Enable reminders")}</Text>
           <Text style={styles.helperText}>
-            You can change this later in Profile.
+            {t("You can change this later in Profile.")}
           </Text>
         </View>
 
@@ -141,7 +143,7 @@ export default function OnboardingScreen() {
         disabled={isSaving}
       >
         <Text style={styles.buttonText}>
-          {isSaving ? "Saving..." : "Continue"}
+          {isSaving ? t("Saving...") : t("Continue")}
         </Text>
       </Pressable>
     </ScrollView>

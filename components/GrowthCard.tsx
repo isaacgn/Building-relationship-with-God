@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { GrowthArea } from "@/types/growth";
+import { useLanguage } from "@/context/LanguageContext";
 
 type GrowthCardProps = {
   area: GrowthArea;
@@ -12,11 +13,15 @@ export default function GrowthCard({
   completed = false,
   onPress,
 }: GrowthCardProps) {
+  const { t } = useLanguage();
+
   return (
     <Pressable onPress={onPress} style={styles.card}>
       <View style={styles.row}>
         <Text style={styles.title}>{area.title}</Text>
-        <Text style={styles.status}>{completed ? "Completed" : "Open"}</Text>
+        <Text style={styles.status}>
+          {completed ? t("Completed") : t("Open")}
+        </Text>
       </View>
 
       <Text style={styles.description}>{area.description}</Text>
