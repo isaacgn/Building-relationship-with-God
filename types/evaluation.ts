@@ -18,6 +18,7 @@ export type EvaluationQuestion = {
   options?: string[];
   sectionTitle?: string;
   subItems?: EvaluationSubItem[];
+  image?: number;
 };
 
 export type EvaluationChapter = {

@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -14,6 +15,7 @@ import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { module2Chapters } from "@/data/module2Questions";
+import { useLanguage } from "@/context/LanguageContext";
 
 function getWebStorage(): Storage | null {
   if (
@@ -70,6 +72,7 @@ function RatingModal({
   onSelect,
   onClose,
 }: RatingModalProps) {
+  const { t } = useLanguage();
   const ratings = Array.from({ length: 11 }, (_, i) => i); // 0 to 10
 
   return (
@@ -81,7 +84,7 @@ function RatingModal({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Rate yourself</Text>
+          <Text style={styles.modalTitle}>{t("Rate yourself")}</Text>
 
           <Text style={styles.modalQuestionLabel}>
             {questionLabel}
@@ -89,7 +92,7 @@ function RatingModal({
 
           {currentRating !== undefined ? (
             <Text style={styles.currentRatingText}>
-              Current rating: {currentRating}
+              {t("Current rating: {rating}", { rating: currentRating })}
             </Text>
           ) : null}
 
@@ -108,7 +111,7 @@ function RatingModal({
           />
 
           <Pressable style={styles.cancelButton} onPress={onClose}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+            <Text style={styles.cancelButtonText}>{t("Cancel")}</Text>
           </Pressable>
         </View>
       </View>
@@ -118,6 +121,10 @@ function RatingModal({
 
 export default function EvaluationChapterScreen() {
   const { chapterId } = useLocalSearchParams<{ chapterId: string }>();
+  const { t } = useLanguage();
+
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [activeImage, setActiveImage] = useState<number | null>(null);
 
   const [answers, setAnswers] = useState<EvaluationAnswers>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -146,19 +153,29 @@ export default function EvaluationChapterScreen() {
       console.error("Could not load evaluation answers:", error);
 
       Alert.alert(
-        "Could not load answers",
-        "Your saved evaluation answers could not be loaded."
+        t("Could not load answers"),
+        t("Your saved evaluation answers could not be loaded.")
       );
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useFocusEffect(
     useCallback(() => {
       loadAnswers();
     }, [loadAnswers])
   );
+
+  function openQuestionImage(image: number) {
+  setActiveImage(image);
+  setImageModalVisible(true);
+}
+
+function closeQuestionImage() {
+  setImageModalVisible(false);
+  setActiveImage(null);
+}
 
   function openRatingModal(questionId: string) {
     setActiveQuestionId(questionId);
@@ -193,8 +210,8 @@ export default function EvaluationChapterScreen() {
       console.error("Could not save evaluation answer:", error);
 
       Alert.alert(
-        "Could not save answer",
-        "Please try selecting your rating again."
+        t("Could not save answer"),
+        t("Please try selecting your rating again.")
       );
     } finally {
       setSavingAnswerId(null);
@@ -255,15 +272,17 @@ export default function EvaluationChapterScreen() {
       setAnswers(updatedAnswers);
 
       Alert.alert(
-        "Responses cleared",
-        `All saved ratings for Chapter ${chapter.number} have been cleared.`
+        t("Responses cleared"),
+        t("All saved ratings for Chapter {number} have been cleared.", {
+          number: chapter.number,
+        })
       );
     } catch (error) {
       console.error("Could not clear chapter responses:", error);
 
       Alert.alert(
-        "Could not clear responses",
-        "Please try again."
+        t("Could not clear responses"),
+        t("Please try again.")
       );
     } finally {
       setIsClearing(false);
@@ -276,15 +295,18 @@ export default function EvaluationChapterScreen() {
     }
 
     Alert.alert(
-      "Clear Chapter Responses?",
-      `This will permanently clear all selected ratings (0–10) for Chapter ${chapter.number}. Responses in other chapters will not be changed.`,
+      t("Clear Chapter Responses?"),
+      t(
+        "This will permanently clear all selected ratings (0–10) for Chapter {number}. Responses in other chapters will not be changed.",
+        { number: chapter.number }
+      ),
       [
         {
-          text: "Cancel",
+          text: t("Cancel"),
           style: "cancel",
         },
         {
-          text: "Clear Responses",
+          text: t("Clear Responses"),
           style: "destructive",
           onPress: clearChapterResponses,
         },
@@ -298,7 +320,7 @@ export default function EvaluationChapterScreen() {
         <ActivityIndicator size="large" color="#2F6B45" />
 
         <Text style={styles.loadingText}>
-          Loading evaluation questions...
+          {t("Loading evaluation questions...")}
         </Text>
       </View>
     );
@@ -307,10 +329,10 @@ export default function EvaluationChapterScreen() {
   if (!chapter) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyTitle}>Chapter not found</Text>
+        <Text style={styles.emptyTitle}>{t("Chapter not found")}</Text>
 
         <Text style={styles.emptyText}>
-          Return to Module 2 Evaluation and choose a chapter again.
+          {t("Return to Module 2 Evaluation and choose a chapter again.")}
         </Text>
       </View>
     );
@@ -319,13 +341,15 @@ export default function EvaluationChapterScreen() {
   if (chapter.questions.length === 0) {
     return (
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.chapterNumber}>CHAPTER {chapter.number}</Text>
+        <Text style={styles.chapterNumber}>
+          {t("CHAPTER {number}", { number: chapter.number })}
+        </Text>
 
-        <Text style={styles.title}>{chapter.title}</Text>
+        <Text style={styles.title}>{t(chapter.title)}</Text>
 
         <View style={styles.emptyCard}>
           <Text style={styles.emptyText}>
-            Questions for this chapter have not yet been added.
+            {t("Questions for this chapter have not yet been added.")}
           </Text>
         </View>
       </ScrollView>
@@ -342,20 +366,25 @@ export default function EvaluationChapterScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.chapterNumber}>CHAPTER {chapter.number}</Text>
+      <Text style={styles.chapterNumber}>
+        {t("CHAPTER {number}", { number: chapter.number })}
+      </Text>
 
-      <Text style={styles.title}>{chapter.title}</Text>
+      <Text style={styles.title}>{t(chapter.title)}</Text>
 
       <Text style={styles.subtitle}>
-        Rate yourself honestly on a scale of 0 to 10 for personal reflection and
-        growth. Your answers are stored only on this device.
+        {t(
+          "Rate yourself honestly on a scale of 0 to 10 for personal reflection and growth. Your answers are stored only on this device."
+        )}
       </Text>
 
       <View style={styles.progressRow}>
         <View style={styles.progressBadge}>
           <Text style={styles.progressText}>
-            {answeredMainQuestions} of {totalMainQuestions} main{" "}
-            {totalMainQuestions === 1 ? "question" : "questions"} rated
+            {t("{answered} of {total} main questions rated", {
+              answered: answeredMainQuestions,
+              total: totalMainQuestions,
+            })}
           </Text>
         </View>
 
@@ -368,7 +397,7 @@ export default function EvaluationChapterScreen() {
           disabled={isClearing}
         >
           <Text style={styles.clearButtonText}>
-            {isClearing ? "Clearing..." : "Clear Responses"}
+            {isClearing ? t("Clearing...") : t("Clear Responses")}
           </Text>
         </Pressable>
       </View>
@@ -377,25 +406,36 @@ export default function EvaluationChapterScreen() {
         <View key={question.id}>
           {question.sectionTitle ? (
             <Text style={styles.sectionTitle}>
-              {question.sectionTitle}
+              {t(question.sectionTitle)}
             </Text>
           ) : null}
 
           <View style={styles.questionCard}>
             <Text style={styles.questionNumber}>
-              Question {index + 1}
+              {t("Question {number}", { number: index + 1 })}
             </Text>
 
-            <Text style={styles.questionText}>{question.text}</Text>
+            <Text style={styles.questionText}>{t(question.text)}</Text>
 
             {question.description ? (
               <Text style={styles.questionDescription}>
-                {question.description}
+                {t(question.description)}
               </Text>
             ) : null}
 
+            {question.image ? (
+  <Pressable
+    style={styles.referImageButton}
+    onPress={() => openQuestionImage(question.image!)}
+  >
+    <Text style={styles.referImageText}>
+      {t("Refer the image")}
+    </Text>
+  </Pressable>
+) : null}
+
             <RatingField
-              label="Click to answer"
+              label={t("Click to answer")}
               rating={answers[question.id]}
               isSaving={savingAnswerId === question.id}
               onPress={() => openRatingModal(question.id)}
@@ -404,7 +444,7 @@ export default function EvaluationChapterScreen() {
             {question.subItems?.length ? (
               <View style={styles.subItemsContainer}>
                 <Text style={styles.subItemsTitle}>
-                  Consider the following:
+                  {t("Consider the following:")}
                 </Text>
 
                 {question.subItems.map((subItem, subIndex) => {
@@ -427,12 +467,12 @@ export default function EvaluationChapterScreen() {
                               styles.chapter12SubItemText,
                           ]}
                         >
-                          {subItem.text}
+                          {t(subItem.text)}
                         </Text>
                       </View>
 
                       <RatingField
-                        label="Click to answer"
+                        label={t("Click to answer")}
                         rating={answers[subItemId]}
                         isSaving={savingAnswerId === subItemId}
                         onPress={() => openRatingModal(subItemId)}
@@ -442,7 +482,7 @@ export default function EvaluationChapterScreen() {
                       {subItem.subItems?.length ? (
                         <View style={styles.nestedSubItemsContainer}>
                           <Text style={styles.nestedSubItemsTitle}>
-                            Reflect on these questions:
+                            {t("Reflect on these questions:")}
                           </Text>
 
                           {subItem.subItems.map(
@@ -468,12 +508,12 @@ export default function EvaluationChapterScreen() {
                                     <Text
                                       style={styles.nestedSubItemText}
                                     >
-                                      {nestedItem}
+                                      {t(nestedItem)}
                                     </Text>
                                   </View>
 
                                   <RatingField
-                                    label="Click to answer"
+                                    label={t("Click to answer")}
                                     rating={answers[nestedItemId]}
                                     isSaving={savingAnswerId === nestedItemId}
                                     onPress={() =>
@@ -496,11 +536,37 @@ export default function EvaluationChapterScreen() {
         </View>
       ))}
 
+      {activeImage ? (
+  <Modal
+    visible={imageModalVisible}
+    transparent
+    animationType="fade"
+    onRequestClose={closeQuestionImage}
+  >
+    <View style={styles.imageModalOverlay}>
+      <View style={styles.imageModalContent}>
+        <Image
+          source={activeImage}
+          style={styles.chapterImage}
+          resizeMode="contain"
+        />
+
+        <Pressable
+          style={styles.closeImageButton}
+          onPress={closeQuestionImage}
+        >
+          <Text style={styles.closeImageButtonText}>{t("Close")}</Text>
+        </Pressable>
+      </View>
+    </View>
+  </Modal>
+) : null}
+
       <RatingModal
         visible={ratingModalVisible}
         questionLabel={
           activeQuestionId
-            ? getQuestionLabelById(activeQuestionId, chapter)
+            ? t(getQuestionLabelById(activeQuestionId, chapter))
             : ""
         }
         currentRating={
@@ -566,6 +632,8 @@ function RatingField({
   onPress,
   compact = false,
 }: RatingFieldProps) {
+  const { t } = useLanguage();
+
   return (
     <View style={[styles.ratingFieldContainer, compact && styles.compactRatingField]}>
       <Pressable
@@ -592,7 +660,7 @@ function RatingField({
             rating !== undefined && styles.selectedRatingValue,
           ]}
         >
-          {rating !== undefined ? `${rating}` : "Not rated"}
+          {rating !== undefined ? `${rating}` : t("Not rated")}
         </Text>
       </Pressable>
     </View>
@@ -600,6 +668,55 @@ function RatingField({
 }
 
 const styles = StyleSheet.create({
+  referImageButton: {
+  alignSelf: "flex-start",
+  paddingVertical: 4,
+  paddingHorizontal: 2,
+},
+
+referImageText: {
+  color: "#2F6B45",
+  fontSize: 14,
+  fontWeight: "700",
+  textDecorationLine: "underline",
+},
+
+imageModalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0, 0, 0, 0.75)",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: 20,
+},
+
+imageModalContent: {
+  width: "100%",
+  maxWidth: 600,
+  maxHeight: "90%",
+  backgroundColor: "#FFFFFF",
+  borderRadius: 16,
+  padding: 12,
+  alignItems: "center",
+  gap: 12,
+},
+
+chapterImage: {
+  width: "100%",
+  height: 520,
+},
+
+closeImageButton: {
+  backgroundColor: "#2F6B45",
+  borderRadius: 10,
+  paddingHorizontal: 24,
+  paddingVertical: 11,
+},
+
+closeImageButtonText: {
+  color: "#FFFFFF",
+  fontSize: 15,
+  fontWeight: "700",
+},
   loadingContainer: {
     flex: 1,
     backgroundColor: "#F7F8F5",

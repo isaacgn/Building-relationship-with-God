@@ -9,9 +9,11 @@ import {
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { getProfile, UserProfile } from "@/services/storage";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
@@ -28,68 +30,78 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Profile</Text>
+      <Text style={styles.title}>{t("Profile")}</Text>
 
       {profile ? (
         <View style={styles.profileCard}>
           <Text style={styles.name}>{profile.name}</Text>
 
           <Text style={styles.detail}>
-            Life stage: {profile.lifeStage}
+            {t("Life stage: {stage}", {
+              stage: t(
+                profile.lifeStage.charAt(0).toUpperCase() +
+                  profile.lifeStage.slice(1)
+              ),
+            })}
           </Text>
 
           <Text style={styles.detail}>
-            Daily reminder: {profile.dailyReminderTime}
+            {t("Daily reminder: {time}", { time: profile.dailyReminderTime })}
           </Text>
 
           <Text style={styles.detail}>
-            Reminders: {profile.notificationsEnabled ? "Enabled" : "Disabled"}
+            {t(
+              profile.notificationsEnabled
+                ? "Reminders: Enabled"
+                : "Reminders: Disabled"
+            )}
           </Text>
         </View>
       ) : (
         <View style={styles.profileCard}>
           <Text style={styles.detail}>
-            Complete onboarding to create your profile.
+            {t("Complete onboarding to create your profile.")}
           </Text>
 
           <Pressable
             style={styles.primaryButton}
             onPress={() => router.push("/onboarding")}
           >
-            <Text style={styles.primaryButtonText}>Set Up Profile</Text>
+            <Text style={styles.primaryButtonText}>{t("Set Up Profile")}</Text>
           </Pressable>
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>Evaluations</Text>
+      <Text style={styles.sectionTitle}>{t("Evaluations")}</Text>
 
       <Pressable
         style={styles.menuItem}
         onPress={() => router.push("/evaluation")}
       >
         <View style={styles.menuText}>
-          <Text style={styles.menuTitle}>Module 2 Evaluation</Text>
+          <Text style={styles.menuTitle}>{t("Module 2 Evaluation")}</Text>
 
           <Text style={styles.menuDescription}>
-            Reflect on discipleship, Bible study, cell groups, prayer, and
-            practical spiritual growth.
+            {t(
+              "Reflect on discipleship, Bible study, cell groups, prayer, and practical spiritual growth."
+            )}
           </Text>
         </View>
 
         <Text style={styles.arrow}>›</Text>
       </Pressable>
 
-      <Text style={styles.sectionTitle}>Settings</Text>
+      <Text style={styles.sectionTitle}>{t("Settings")}</Text>
 
       <Pressable
         style={styles.menuItem}
         onPress={() => router.push("/onboarding")}
       >
         <View style={styles.menuText}>
-          <Text style={styles.menuTitle}>Edit Profile</Text>
+          <Text style={styles.menuTitle}>{t("Edit Profile")}</Text>
 
           <Text style={styles.menuDescription}>
-            Update your name, life stage, and reminder preferences.
+            {t("Update your name, life stage, and reminder preferences.")}
           </Text>
         </View>
 
